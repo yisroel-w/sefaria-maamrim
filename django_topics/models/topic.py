@@ -2,13 +2,14 @@ from django.db import models
 from django.db.models.query import QuerySet
 from django_topics.models.pool import TopicPool
 from collections import defaultdict
+from typing import List
 
 
 class TopicManager(models.Manager):
     slug_to_pools = {}
 
 
-    def sample_topic_slugs(self, order, pool: str = None, limit=10) -> list[str]:
+    def sample_topic_slugs(self, order, pool: str = None, limit=10) -> List[str]:
         queryset = self.get_topic_slugs_by_pool(pool) if pool else self.all().values_list('slug', flat=True)
         if order == 'random':
             return list(queryset.order_by("?")[:limit])  # Uses database-level random ordering
@@ -45,7 +46,7 @@ class Topic(models.Model):
         """
         self.slug = self.slug.lower()
         super().save(*args, **kwargs)
-        
+
         # Update cache of slugs to pools
         Topic.objects.build_slug_to_pools_cache(rebuild=True)
 
