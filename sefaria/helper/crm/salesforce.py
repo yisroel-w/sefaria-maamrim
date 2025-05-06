@@ -6,7 +6,7 @@ import json
 from sefaria.helper.crm.crm_connection_manager import CrmConnectionManager
 from sefaria import settings as sls
 
-from typing import Any, Optional
+from typing import Any, Optional, List
 
 class SalesforceNewsletterListRetrievalError(Exception):
     pass
@@ -126,13 +126,13 @@ class SalesforceConnectionManager(CrmConnectionManager):
             return False
 
     def subscribe_to_lists(
-        self, 
-        email: str, 
-        first_name: Optional[str] = None, 
-        last_name: Optional[str] = None, 
-        lang: str = "en", 
+        self,
+        email: str,
+        first_name: Optional[str] = None,
+        last_name: Optional[str] = None,
+        lang: str = "en",
         educator: bool = False,
-        mailing_lists: Optional[list[str]] = None) -> Any:
+        mailing_lists: Optional[List[str]] = None) -> Any:
 
         mailing_lists = mailing_lists or []
 
@@ -161,7 +161,7 @@ class SalesforceConnectionManager(CrmConnectionManager):
             return False
         return res
 
-    def get_available_lists(self) -> list[str]:
+    def get_available_lists(self) -> List[str]:
         try:
             resource_prefix = f"services/data/v{self.version}/query"
             endpoint = f"{sls.SALESFORCE_BASE_URL}/{resource_prefix}/"
