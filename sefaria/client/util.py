@@ -1,4 +1,3 @@
-
 import json
 from datetime import datetime
 
@@ -8,6 +7,9 @@ from webpack_loader import utils as webpack_utils
 
 from sefaria import settings as sls
 # from sefaria.model.user_profile import UserProfile
+
+# ADDED: Import List from typing for Python 3.8 compatibility
+from typing import List
 
 
 def jsonResponse(data, callback=None, status=200):
@@ -39,7 +41,8 @@ def jsonpResponse(data, callback, status=200):
     return HttpResponse("%s(%s)" % (callback, json.dumps(data, ensure_ascii=False)), content_type="application/javascript; charset=utf-8", charset="utf-8", status=status)
 
 
-def celeryResponse(task_id: str, sub_task_ids: list[str] = None):
+# UPDATED: Changed list[str] to List[str] for Python 3.8 compatibility
+def celeryResponse(task_id: str, sub_task_ids: List[str] = None):
     data = {'task_id': task_id}
     if sub_task_ids:
         data['sub_task_ids'] = sub_task_ids
