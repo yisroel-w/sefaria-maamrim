@@ -49,11 +49,14 @@ MEDIA_URL = ''
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/home/media/media.lawrence.com/static/"
-STATIC_ROOT = '/app/static-collected'
+STATIC_ROOT = '/opt/render/project/src/staticfiles'
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
 STATIC_URL = '/static/'
+
+# Additional configuration for static files
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 # List of finder classes that know how to find static files in
 # various locations.
