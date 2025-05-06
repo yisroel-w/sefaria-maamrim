@@ -28,9 +28,16 @@ DATABASES = {
 }
 
 # MongoDB for Sefaria's primary data
-# Use MONGO_URL environment variable for connection string (as SEFARIA_DB)
+# SEFARIA_DB: Use MONGO_URL environment variable for the FULL connection string (used by MongoClient)
+# SEFARIA_DB_NAME: Use MONGO_DB_NAME environment variable for the DATABASE NAME ONLY (used for client[db_name])
 # Fallback to localhost:27017/sefaria for local development if MONGO_URL is not set
 SEFARIA_DB = os.getenv('MONGO_URL', 'mongodb://localhost:27017/sefaria') # Reads from Render Environment Variable MONGO_URL
+
+# ADDED: Setting for the MongoDB Database NAME ONLY
+# Reads from env var MONGO_DB_NAME, or defaults to 'sefaria'
+SEFARIA_DB_NAME = os.getenv('MONGO_DB_NAME', 'sefaria')
+
+
 SEFARIA_DB_USER = os.getenv('MONGO_DB_USER', '') # Optional: Reads from Render Environment Variable MONGO_DB_USER
 SEFARIA_DB_PASSWORD = os.getenv('MONGO_DB_PASSWORD', '') # Optional: Reads from Render Environment Variable MONGO_DB_PASSWORD
 
@@ -38,11 +45,11 @@ SEFARIA_DB_PASSWORD = os.getenv('MONGO_DB_PASSWORD', '') # Optional: Reads from 
 # Set to None if not using a replica set (typical for free Atlas clusters)
 MONGO_REPLICASET_NAME = None
 
-# ADDED: Define MONGO_HOST and MONGO_PORT as required by database.py when not using replica set
+# Define MONGO_HOST and MONGO_PORT as required by database.py when not using replica set
 # These will read from env vars MONGO_HOST and MONGO_PORT, or fallback to localhost:27017
-# NOTE: sefaria/system/database.py seems to prefer using MONGO_HOST/MONGO_PORT over the full SEFARIA_DB URL
-# when MONGO_REPLICASET_NAME is None. This might still cause a connection issue if the Atlas URL is not
-# compatible with simple host/port connection.
+# While database.py should now use the full SEFARIA_DB URL for client creation, these variables
+# are still referenced in the original code's logic path for non-replica sets. Keeping them
+# defined prevents NameErrors, even if their values aren't strictly used for the final connection string by PyMongo.
 MONGO_HOST = os.getenv('MONGO_HOST', 'localhost')
 MONGO_PORT = int(os.getenv('MONGO_PORT', 27017))
 
