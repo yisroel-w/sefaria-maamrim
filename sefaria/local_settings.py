@@ -8,6 +8,7 @@ import structlog
 # Or, if this import itself causes issues, temporarily comment out logging configurations that rely on it
 import logging # Standard library logging import
 import sys # Needed for sys.stdout in logging
+import django.utils.log # Needed for Django's logging filters
 
 # --- General Settings ---
 DEBUG = False # Should be False for production on Render
@@ -35,7 +36,7 @@ SEFARIA_DB_PASSWORD = os.getenv('MONGO_DB_PASSWORD', '') # Optional: Reads from 
 
 # Required by sefaria.system.database for replica set configuration check
 # Set to None if not using a replica set (typical for free Atlas clusters)
-MONGO_REPLICASET_NAME = None # <-- ADDED THIS LINE TO FIX NameError
+MONGO_REPLICASET_NAME = None
 
 # --- Security Settings ---
 SECRET_KEY = os.getenv('SECRET_KEY', 'insert your long random secret key here !') # Reads from Render Environment Variable SECRET_KEY
@@ -84,6 +85,7 @@ DOMAIN_LANGUAGES = {} # Keep this as is unless you have specific domain language
 
 
 # --- Email settings ---
+# Configure these if you want mail_admins handler to work
 EMAIL_HOST = os.getenv('EMAIL_HOST', 'localhost') # Reads from Render Environment Variable EMAIL_HOST (optional)
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', 1025)) # Reads from Render Environment Variable EMAIL_PORT (optional)
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend') # Reads from Render Environment Variable EMAIL_BACKEND (optional)
@@ -175,6 +177,13 @@ CELERY_QUEUES = {} # Define queues if enabling Celery
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    # ADDED filters dictionary
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse',
+        },
+        # Add other filters if needed and defined in your original settings.py
+    },
     'formatters': {
         'verbose': {
             'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
@@ -199,8 +208,9 @@ LOGGING = {
         'mail_admins': { # Configured but requires email settings and DEBUG=False
             'level': 'ERROR',
             'class': 'django.utils.log.AdminEmailHandler',
-            'filters': ['require_debug_false'], # Ensure this filter is defined in settings.py if not here
+            'filters': ['require_debug_false'], # This filter is now defined above
         },
+        # Add other handlers if needed and defined in your original settings.py
     },
     'loggers': {
         'django': {
@@ -218,19 +228,9 @@ LOGGING = {
             'level': 'WARNING', # Set a higher level like WARNING in production typically
             'propagate': False,
         },
+        # Add other loggers if needed and defined in your original settings.py
     }
 }
-
-# Ensure Django requires DEBUG=False for AdminEmailHandler to be active (security best practice)
-# Add 'require_debug_false' filter if not already present in handlers or loggers that should only run in production
-# This filter is typically defined in the main settings.py
-# Example:
-# 'filters': {
-#     'require_debug_false': {
-#         '()': 'django.utils.log.RequireDebugFalse'
-#     },
-#     ...
-# }
 
 
 # Structured Logging (Structlog) Configuration (Copied from your previous version)
