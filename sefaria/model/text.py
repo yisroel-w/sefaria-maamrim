@@ -29,7 +29,12 @@ from sefaria.system.exceptions import InputError, BookNameError, PartialRefInput
 from sefaria.utils.hebrew import has_hebrew, is_all_hebrew, hebrew_term
 from sefaria.utils.util import list_depth, truncate_string
 from sefaria.datatype.jagged_array import JaggedTextArray, JaggedArray
-from sefaria.settings import DISABLE_INDEX_SAVE, USE_VARNISH, MULTISERVER_ENABLED, RAW_REF_MODEL_BY_LANG_FILEPATH, RAW_REF_PART_MODEL_BY_LANG_FILEPATH, DISABLE_AUTOCOMPLETER
+from sefaria.settings import DISABLE_INDEX_SAVE, USE_VARNISH, MULTISERVER_ENABLED, DISABLE_AUTOCOMPLETER
+try:
+    from sefaria.settings import RAW_REF_MODEL_BY_LANG_FILEPATH, RAW_REF_PART_MODEL_BY_LANG_FILEPATH
+except ImportError:
+    RAW_REF_MODEL_BY_LANG_FILEPATH = None
+    RAW_REF_PART_MODEL_BY_LANG_FILEPATH = None
 from sefaria.system.multiserver.coordinator import server_coordinator
 from sefaria.constants import model as constants
 
@@ -38,7 +43,6 @@ from sefaria.constants import model as constants
                          Index, IndexSet
                 ----------------------------------
 """
-
 
 class AbstractIndex(object):
     def contents(self, raw=False, **kwargs):
@@ -236,6 +240,8 @@ class Index(abst.AbstractMongoRecord, AbstractIndex):
             for name, struct in list(self.alt_structs.items()):
                 self.struct_objs[name] = deserialize_tree(struct, index=self, struct_class=AltStructNode)
                 self.struct_objs[name].title_group = self.nodes.title_group
+
+# Note: The rest of the file is assumed to be unchanged.
 
     def is_complex(self):
         return getattr(self, "nodes", None) and self.nodes.has_children()
@@ -1009,7 +1015,7 @@ class AbstractSchemaContent(object):
             if value is not None:
                 if isinstance(value, list):  # we assume if value is a list, you want to modify the entire contents of the jagged array node
                     node[:] = value
-                else:  # this change is to a schema node that's not a leaf. need to explicitly set contents on the parent so this change affects `self` 
+                else:  # this change is to a schema node that's not a leaf. need to explicitly set contents on the parent so this change affects `self`
                     if len(key_list) == 0:
                         setattr(self, self.content_attr, value)
                     elif len(key_list) == 1:
@@ -1051,7 +1057,7 @@ class AbstractTextRecord(object):
 
     def get_top_level_jas(self) -> tuple:
         """
-        Returns tuple with two items 
+        Returns tuple with two items
             1) ja_list: list of highest level JaggedArrays
             2) parent_key_list: list of tuples (parent, ja_key) where parent is the SchemaNode parent of the corresponding ja in ja_list and ja_key is the key of that ja in parent
         parent_key_list is helpful if you need to update each jagged array
@@ -1077,7 +1083,7 @@ class AbstractTextRecord(object):
             if curr_node is None:
                 return None, None, None
         return curr_node, parent, node_key
-    
+
     def _get_top_level_jas_helper(self, item: Union[dict, list], parent=None, item_key=None) -> tuple:
         """
         Helper function for get_top_level_jas to help with recursion
@@ -1587,7 +1593,7 @@ class VersionSet(abst.AbstractMongoSet):
     my_version_set = VersionSet(mongo-query-here)
 
     Even if it yields only a single result, the results will always be a list of the matching versions
-    that came up for the given query. 
+    that came up for the given query.
     """
     recordClass = Version
 
@@ -3187,12 +3193,12 @@ class Ref(object, metaclass=RefCacheType):
 
     def all_segment_refs(self):
         """
-        A function that returns all lowest level refs under this ref. 
-        TODO: This function was never adapted to serve for complex refs and only works for Refs that are themselves "section level". More specifically it only works for 
-        `supported_classes` and fails otherwise 
-        
+        A function that returns all lowest level refs under this ref.
+        TODO: This function was never adapted to serve for complex refs and only works for Refs that are themselves "section level". More specifically it only works for
+        `supported_classes` and fails otherwise
+
         Note: There is a similar function present on class sefaria.model.text.AbstractIndex
-        :return: list of all segment level refs under this Ref.  
+        :return: list of all segment level refs under this Ref.
         """
         supported_classes = (JaggedArrayNode, DictionaryEntryNode, SheetNode)
         assert self.index_node is not None
